@@ -9,11 +9,43 @@ const {
 const { render } = ReactDOM;
 const Fragment = React.Fragment;
 
-localStorage.setItem(
-  "homeBoxes",
-  JSON.stringify(["nuevoRecibo", "alumnos", "reporte"])
-);
+const datos = {
+  agregar: (nombre, valor) => {
+    datos[nombre] = valor;
+    localStorage.setItem(nombre, JSON.stringify(valor));
+  }
+};
 
+//datos
+datos.agregar("homeBoxes", [
+  { box: "alumnos", size: "SmallBox" },
+  { box: "pedidos", size: "SmallBox" },
+  { box: "usuarios", size: "SmallBox" },
+  { box: "nuevoRecibo", size: "BigBox" }
+]);
+datos.agregar("meses", [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic"
+]);
+datos.agregar("conceptos", [
+  "Couta Social",
+  "Materiales",
+  "Emergencias",
+  "Fotos",
+  "Rifa",
+  "Extraordinaria",
+  "Donaciones"
+]);
 uid = (() => {
   let i = 0;
   return () => {
@@ -21,21 +53,17 @@ uid = (() => {
   };
 })();
 
-
+//contextos
 const gc = React.createContext();
-
-/* A "smart" container to hold state */
 class gcc extends React.Component {
   state = {
-    homeBoxes: local('homeBoxes'),
-    nombre: "",
-    items:[],
-    monto: 0    
-  }
+    homeBoxes: local("homeBoxes"),
+    recibo: {}
+  };
 
   render() {
-    const { companyName, employees, name, teamName, teams, title } = this.state;
-    
+    const { homeBoxes, nombre, items, monto } = this.state;
+
     return (
       // Create a Provider from the Context, pass in state values
       <CompanyContext.Provider
@@ -45,14 +73,16 @@ class gcc extends React.Component {
           name,
           teamName,
           teams,
-          title,
-        }} >
+          title
+        }}
+      >
         <Company />
       </CompanyContext.Provider>
-    )
+    );
   }
 }
 
+//elementos
 const Nav = props => {
   const { links, children } = props;
   return (
@@ -78,287 +108,368 @@ const Nav = props => {
     </Fragment>
   );
 };
-const bigBox = props => {};
+const BigBox = ({ color, children }) => {
+  return (
+    <section className="avenir w-100 pa2 pt5">
+      <article className="fl w-100 pa2">
+        <div className={`bg-${color} white w-100 mt3 pa3 br3`}>{children}</div>
+      </article>
+    </section>
+  );
+};
+const SmallBox = ({ color, children }) => {
+  return (
+    <article className="fl w-100 w-third-ns pa2">
+      <div className={`bg-${color} white w-100 mt3 pa3 br3`}>{children}</div>
+    </article>
+  );
+};
+const Campo = ({ color, nombre }) => {
+  return (
+    <Fragment>
+      <label>{nombre}</label>
+      <input className={`${color} w-30 mb3 f6 fw6 bb bw-3 bg`} />
+    </Fragment>
+  );
+};
+const DropDown = ({ color, nombre, opciones }) => {
+  return (
+    <Fragment>
+      <label>{nombre}</label>
+      <select className={`${color} w-100 mb3 f6 fw6 bb`}>
+        {opciones.map(opcion => <option>{opcion}</option>)}
+      </select>
+    </Fragment>
+  );
+};
+const Concepto = ({}) => {
+  return (
+    <Fragment>
+      <div className="flex flex-row pt3">
+        <div className="flex flex-column pt3 pr4">
+          <label>Concepto</label>
+          <select className="gold w-100 ttu mb3 f6 fw6 bb">
+            <option />
+          </select>
+        </div>
+        <div className="flex flex-column pt3 pr4">
+          <label>Codigo</label>
+          <input
+            value="123456"
+            className="gold w-100 ttu mb3 f6 fw6 bb bw-3 bg"
+          />
+        </div>
+        <div className="flex flex-column pt3 pr4">
+          <label>Tamaño</label>
+          <select className="gold w-100 ttu mb3 f6 fw6 bb">
+            <option>15 x 20</option>
+          </select>
+        </div>
+      </div>
+    </Fragment>
+  );
+};
+
+//secciones
 const Home = props => {
   return (
     <Fragment>
-      <NuevoRecibo />
-      <Reportes />
-      <Cajas />
-      <Admin />
+      <section className="avenir w-100 pa2 pt5">
+        <SmallBox color="pink">
+          <Alumnos />
+        </SmallBox>
+        <SmallBox color="light-blue">
+          <Reporte />
+        </SmallBox>
+        <SmallBox color="red">
+          <Usuarios />
+        </SmallBox>
+      </section>
+      <BigBox color="gold">
+        <NuevoRecibo />
+      </BigBox>
     </Fragment>
   );
 };
 const NuevoRecibo = props => {
   const now = new Date();
   const fecha = `${("0" + now.getDate()).slice(-2)} / ${
-    [
-      "Ene","Feb","Mar","Abr",
-      "May","Jun","Jul","Ago",
-      "Sep","Oct","Nov","Dic"
-    ][now.getMonth()]
+    datos.meses[now.getMonth()]
   } / ${now.getYear() - 100} `;
   return (
-    <section className="avenir w-100 pa2 pt5">
-      <article className="fl w-100 pa2">
-        <div className="bg-green white w-100 mt3 pa3 br3">
-          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-            <div className="ttu f6 fw2">Recibo</div>
-            <div className="ttu f6 fw2">{fecha}</div>
-            <div className="ttu f6 fw2">nro 0000 - 0000</div>
-          </div>
-          <div className="flex flex-column pt3">
-            <label>Nombre</label>
-            <input
-              value="Bianca Mandaradoni"
-              className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Recibo</div>
+        <div className="ttu f6 fw2">{fecha}</div>
+        <div className="ttu f6 fw2">nro 0000 - 0000</div>
+      </div>
+      <div className="flex flex-column pt3">
+        <Campo color="gold" nombre="Nombre" />
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <DropDown
+              color="gold"
+              nombre="Concepto"
+              opciones={datos.conceptos}
             />
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Cuota Social</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Mes</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Marzo</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Pedido de Fotos</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Codigo</label>
-                <input
-                  value="123456"
-                  className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
-                />
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Tamaño</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>15 x 20</option>
-                </select>
-              </div>
-            </div>
-            <button className="br-pill green w-10 bg-white b--white">+</button>
           </div>
-          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-            $ 50
-          </div>
-          <div className="pt2 w-100 inline-flex items-center justify-end">
-            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-              Cobrar
-            </a>
+          <div className="flex flex-column pt3 pr4">
+            <DropDown color="gold" nombre="Mes" opciones={datos.meses} />
           </div>
         </div>
-      </article>
-    </section>
+        <button className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
+          +
+        </button>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+        $ 50
+      </div>
+      <div className="pt2 w-100 inline-flex items-center justify-end">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Cobrar
+        </a>
+      </div>
+    </Fragment>
   );
 };
 const Reportes = props => {
   return (
-    <section className="avenir w-100 pa2 pt5">
-      <article className="fl w-100 pa2">
-        <div className="bg-red white w-100 mt3 pa3 br3">
-          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-            <div className="ttu f6 fw2">Recibo</div>
-            <div className="ttu f6 fw2">26 / 01 / 2019</div>
-            <div className="ttu f6 fw2">nro 0000 - 0000</div>
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Recibo</div>
+        <div className="ttu f6 fw2">26 / 01 / 2019</div>
+        <div className="ttu f6 fw2">nro 0000 - 0000</div>
+      </div>
+      <div className="flex flex-column pt3">
+        <label>Nombre</label>
+        <input
+          value="Bianca Mandaradoni"
+          className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
+        />
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Cuota Social</option>
+            </select>
           </div>
-          <div className="flex flex-column pt3">
-            <label>Nombre</label>
-            <input
-              value="Bianca Mandaradoni"
-              className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
-            />
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Cuota Social</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Mes</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Marzo</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Pedido de Fotos</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Codigo</label>
-                <input
-                  value="123456"
-                  className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
-                />
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Tamaño</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>15 x 20</option>
-                </select>
-              </div>
-            </div>
-            <button className="br-pill green w-10 bg-white b--white">+</button>
-          </div>
-          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-            $ 50
-          </div>
-          <div className="pt2 w-100 inline-flex items-center justify-end">
-            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-              Cobrar
-            </a>
+          <div className="flex flex-column pt3 pr4">
+            <label>Mes</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Marzo</option>
+            </select>
           </div>
         </div>
-      </article>
-    </section>
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Pedido de Fotos</option>
+            </select>
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Codigo</label>
+            <input
+              value="123456"
+              className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
+            />
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Tamaño</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>15 x 20</option>
+            </select>
+          </div>
+        </div>
+        <button className="br-pill green w-10 bg-white b--white">+</button>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+        $ 50
+      </div>
+      <div className="pt2 w-100 inline-flex items-center justify-end">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Cobrar
+        </a>
+      </div>
+    </Fragment>
   );
 };
 const Cajas = props => {
   return (
-    <section className="avenir w-100 pa2 pt5">
-      <article className="fl w-100 pa2">
-        <div className="bg-blue white w-100 mt3 pa3 br3">
-          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-            <div className="ttu f6 fw2">Recibo</div>
-            <div className="ttu f6 fw2">26 / 01 / 2019</div>
-            <div className="ttu f6 fw2">nro 0000 - 0000</div>
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Recibo</div>
+        <div className="ttu f6 fw2">26 / 01 / 2019</div>
+        <div className="ttu f6 fw2">nro 0000 - 0000</div>
+      </div>
+      <div className="flex flex-column pt3">
+        <label>Nombre</label>
+        <input
+          value="Bianca Mandaradoni"
+          className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
+        />
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Cuota Social</option>
+            </select>
           </div>
-          <div className="flex flex-column pt3">
-            <label>Nombre</label>
-            <input
-              value="Bianca Mandaradoni"
-              className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
-            />
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Cuota Social</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Mes</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Marzo</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Pedido de Fotos</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Codigo</label>
-                <input
-                  value="123456"
-                  className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
-                />
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Tamaño</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>15 x 20</option>
-                </select>
-              </div>
-            </div>
-            <button className="br-pill green w-10 bg-white b--white">+</button>
-          </div>
-          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-            $ 50
-          </div>
-          <div className="pt2 w-100 inline-flex items-center justify-end">
-            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-              Cobrar
-            </a>
+          <div className="flex flex-column pt3 pr4">
+            <label>Mes</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Marzo</option>
+            </select>
           </div>
         </div>
-      </article>
-    </section>
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Pedido de Fotos</option>
+            </select>
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Codigo</label>
+            <input
+              value="123456"
+              className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
+            />
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Tamaño</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>15 x 20</option>
+            </select>
+          </div>
+        </div>
+        <button className="br-pill green w-10 bg-white b--white">+</button>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+        $ 50
+      </div>
+      <div className="pt2 w-100 inline-flex items-center justify-end">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Cobrar
+        </a>
+      </div>
+    </Fragment>
   );
 };
 const Admin = props => {
   return (
-    <section className="avenir w-100 pa2 pt5">
-      <article className="fl w-100 pa2">
-        <div className="bg-gold white w-100 mt3 pa3 br3">
-          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-            <div className="ttu f6 fw2">Recibo</div>
-            <div className="ttu f6 fw2">26 / 01 / 2019</div>
-            <div className="ttu f6 fw2">nro 0000 - 0000</div>
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Recibo</div>
+        <div className="ttu f6 fw2">26 / 01 / 2019</div>
+        <div className="ttu f6 fw2">nro 0000 - 0000</div>
+      </div>
+      <div className="flex flex-column pt3">
+        <label>Nombre</label>
+        <input
+          value="Bianca Mandaradoni"
+          className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
+        />
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Cuota Social</option>
+            </select>
           </div>
-          <div className="flex flex-column pt3">
-            <label>Nombre</label>
-            <input
-              value="Bianca Mandaradoni"
-              className="green w-30 ttu mb3 f6 fw6 bb bw-3 bg"
-            />
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Cuota Social</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Mes</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Marzo</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-row pt3">
-              <div className="flex flex-column pt3 pr4">
-                <label>Concepto</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>Pedido de Fotos</option>
-                </select>
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Codigo</label>
-                <input
-                  value="123456"
-                  className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
-                />
-              </div>
-              <div className="flex flex-column pt3 pr4">
-                <label>Tamaño</label>
-                <select className="green w-100 ttu mb3 f6 fw6 bb">
-                  <option>15 x 20</option>
-                </select>
-              </div>
-            </div>
-            <button className="br-pill green w-10 bg-white b--white">+</button>
-          </div>
-          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-            $ 50
-          </div>
-          <div className="pt2 w-100 inline-flex items-center justify-end">
-            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-              Cobrar
-            </a>
+          <div className="flex flex-column pt3 pr4">
+            <label>Mes</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Marzo</option>
+            </select>
           </div>
         </div>
-      </article>
-    </section>
+        <div className="flex flex-row pt3">
+          <div className="flex flex-column pt3 pr4">
+            <label>Concepto</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>Pedido de Fotos</option>
+            </select>
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Codigo</label>
+            <input
+              value="123456"
+              className="green w-100 ttu mb3 f6 fw6 bb bw-3 bg"
+            />
+          </div>
+          <div className="flex flex-column pt3 pr4">
+            <label>Tamaño</label>
+            <select className="green w-100 ttu mb3 f6 fw6 bb">
+              <option>15 x 20</option>
+            </select>
+          </div>
+        </div>
+        <button className="br-pill green w-10 bg-white b--white">+</button>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+        $ 50
+      </div>
+      <div className="pt2 w-100 inline-flex items-center justify-end">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Cobrar
+        </a>
+      </div>
+    </Fragment>
+  );
+};
+const Reporte = props => {
+  return (
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Pedidos</div>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center">49</div>
+      <div className="pt2 w-100 inline-flex items-center justify-between">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Ver Lista
+        </a>
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Editar
+        </a>
+      </div>
+    </Fragment>
+  );
+};
+const Alumnos = props => {
+  return (
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Alumnos</div>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center">256</div>
+      <div className="pt2 w-100 inline-flex items-center justify-between">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Reporte
+        </a>
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Agregar
+        </a>
+      </div>
+    </Fragment>
+  );
+};
+const Usuarios = props => {
+  return (
+    <Fragment>
+      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+        <div className="ttu f6 fw2">Usuarios</div>
+      </div>
+      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center">13</div>
+      <div className="pt2 w-100 inline-flex items-center justify-between">
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Reporte
+        </a>
+        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+          Agregar
+        </a>
+      </div>
+    </Fragment>
   );
 };
 
@@ -378,10 +489,38 @@ const Root = () => {
         <Switch>
           <Route exact path="/" component={Home} />
           <Route path="/home" component={Home} />
-          <Route path="/nuevoRecibo" component={NuevoRecibo} />
-          <Route path="/reportes" component={Reportes} />
-          <Route path="/cajas" component={Cajas} />
-          <Route path="/admin" component={Admin} />
+          <Route
+            path="/nuevoRecibo"
+            component={() => (
+              <BigBox color="gold">
+                <NuevoRecibo />
+              </BigBox>
+            )}
+          />
+          <Route
+            path="/reportes"
+            component={() => (
+              <BigBox color="light-blue">
+                <Reportes />
+              </BigBox>
+            )}
+          />
+          <Route
+            path="/cajas"
+            component={() => (
+              <BigBox color="red">
+                <Cajas />
+              </BigBox>
+            )}
+          />
+          <Route
+            path="/admin"
+            component={() => (
+              <BigBox color="green">
+                <Admin />
+              </BigBox>
+            )}
+          />
         </Switch>
       </div>
     </HashRouter>
