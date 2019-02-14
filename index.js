@@ -9,12 +9,19 @@ const {
 const { render } = ReactDOM;
 const Fragment = React.Fragment;
 
+//funciones de ayuda
 const datos = {
   agregar: (nombre, valor) => {
     datos[nombre] = valor;
     localStorage.setItem(nombre, JSON.stringify(valor));
   }
 };
+const uid = (() => {
+  let i = 0;
+  return () => {
+    return i++;
+  };
+})();
 
 //datos
 datos.agregar("homeBoxes", [
@@ -46,12 +53,7 @@ datos.agregar("conceptos", [
   "Extraordinaria",
   "Donaciones"
 ]);
-uid = (() => {
-  let i = 0;
-  return () => {
-    return i++;
-  };
-})();
+datos.agregar("tamaños", ["15 x 20", "20 x 30"]);
 
 //contextos
 const gc = React.createContext();
@@ -93,7 +95,7 @@ const Nav = props => {
             {links.map(link => (
               <NavLink
                 to={`/${link.href}`}
-                className="link dim white dib mr3"
+                className={`link dim white dib mr3 hover-${link.color}`}
                 activeClassName={link.color}
                 exact
                 key={uid()}
@@ -126,47 +128,31 @@ const SmallBox = ({ color, children }) => {
 };
 const Campo = ({ color, nombre }) => {
   return (
-    <Fragment>
+    <div className="flex flex-column pt1 pr3">
       <label>{nombre}</label>
-      <input className={`${color} w-30 mb3 f6 fw6 bb bw-3 bg`} />
-    </Fragment>
+      <input className={`${color} w5 mb3 f6 fw6 bb bw-3 bg`} />
+    </div>
   );
 };
 const DropDown = ({ color, nombre, opciones }) => {
   return (
-    <Fragment>
+     <div className="flex flex-column pt1 pr3">
       <label>{nombre}</label>
       <select className={`${color} w-100 mb3 f6 fw6 bb`}>
-        {opciones.map(opcion => <option>{opcion}</option>)}
+        {opciones.map(opcion => <option key={uid()}>{opcion}</option>)}
       </select>
-    </Fragment>
+    </div>
   );
 };
 const Concepto = ({}) => {
   return (
-    <Fragment>
-      <div className="flex flex-row pt3">
-        <div className="flex flex-column pt3 pr4">
-          <label>Concepto</label>
-          <select className="gold w-100 ttu mb3 f6 fw6 bb">
-            <option />
-          </select>
-        </div>
-        <div className="flex flex-column pt3 pr4">
-          <label>Codigo</label>
-          <input
-            value="123456"
-            className="gold w-100 ttu mb3 f6 fw6 bb bw-3 bg"
-          />
-        </div>
-        <div className="flex flex-column pt3 pr4">
-          <label>Tamaño</label>
-          <select className="gold w-100 ttu mb3 f6 fw6 bb">
-            <option>15 x 20</option>
-          </select>
-        </div>
-      </div>
-    </Fragment>
+    <div className="flex flex-row pt3">
+      <DropDown color="gold" nombre="Concepto" opciones={datos.conceptos} />
+      <DropDown color="gold" nombre="Mes" opciones={datos.meses} />
+      <Campo color="gold" nombre="Acto" />
+      <Campo color="gold" nombre="Codigo" />
+      <DropDown color="gold" nombre="Tamaño" opciones={datos.tamaños} />
+    </div>
   );
 };
 
@@ -205,18 +191,7 @@ const NuevoRecibo = props => {
       </div>
       <div className="flex flex-column pt3">
         <Campo color="gold" nombre="Nombre" />
-        <div className="flex flex-row pt3">
-          <div className="flex flex-column pt3 pr4">
-            <DropDown
-              color="gold"
-              nombre="Concepto"
-              opciones={datos.conceptos}
-            />
-          </div>
-          <div className="flex flex-column pt3 pr4">
-            <DropDown color="gold" nombre="Mes" opciones={datos.meses} />
-          </div>
-        </div>
+        <Concepto />
         <button className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
           +
         </button>
@@ -479,7 +454,7 @@ const Root = () => {
       <div>
         <Nav
           links={[
-            { text: "Home", href: "home", color: "pink" },
+            { text: "Home", href: "", color: "pink" },
             { text: "Nuevo recibo", href: "nuevoRecibo", color: "gold" },
             { text: "Reportes", href: "reportes", color: "light-blue" },
             { text: "Cajas", href: "cajas", color: "red" },
