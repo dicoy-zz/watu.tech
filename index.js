@@ -68,7 +68,15 @@ class Gcc extends React.Component {
       <Gc.Provider
         value={{
           state: this.state,
-          nuevoItem: () => this.setState({items:this.state.items.concat("")})
+          nuevoItem: () => this.setState({items:this.state.items.concat("")}),
+          changers: {
+            concepto: (concepto, numero) => this.setState({
+              items:this.state.items.map((item, index) =>
+                numero == index ? {...item, concepto} : item
+              )
+            }),
+            mes: (a,b) => this.setState({items:this.state.items.concat("")})
+          }
         }}
       >
         {this.props.children}
@@ -127,24 +135,28 @@ const Campo = ({ color, nombre }) => {
     </div>
   );
 };
-const DropDown = ({ color, nombre, opciones }) => {
+const DropDown = ({ color, nombre, numero, changer, opciones }) => {
   return (
-     <div className="flex flex-column pt1 pr3">
-      <label>{nombre}</label>
-      <select className={`${color} w-100 mb3 f6 fw6 bb`}>
-        {opciones.map(opcion => <option key={uid()}>{opcion}</option>)}
-      </select>
-    </div>
+    <Gc.Consumer>
+      { context => (
+        <div className="flex flex-column pt1 pr3">
+          <label>{nombre}</label>
+          <select onChange={e=>changer(numero, e.target.value)} className={`${color} w-100 mb3 f6 fw6 bb`}>
+            {opciones.map(opcion => <option key={uid()}>{opcion}</option>)}
+          </select>
+        </div>
+      )}
+    </Gc.Consumer>
   );
 };
-const Concepto = ({}) => {
+const Concepto = ({numero, changers}) => {
   return (
     <div className="flex flex-row pt3">
-      <DropDown color="gold" nombre="Concepto" opciones={datos.conceptos} />
-      <DropDown color="gold" nombre="Mes" opciones={datos.meses} />
-      <Campo color="gold" nombre="Acto" />
-      <Campo color="gold" nombre="Codigo" />
-      <DropDown color="gold" nombre="Tamaño" opciones={datos.tamaños} />
+      <DropDown color="gold" nombre="Concepto" numero={numero} changer={changers.concepto} opciones={datos.conceptos} />
+      <DropDown color="gold" nombre="Mes" numero={numero} changer={changers.mes} opciones={datos.meses} />
+      <Campo color="gold" nombre="Acto" numero={numero} changer={changers.acto} />
+      <Campo color="gold" nombre="Codigo" numero={numero} changer={changers.codigo} />
+      <DropDown color="gold" nombre="Tamaño" numero={numero} changer={changers.tamaño} opciones={datos.tamaños} />
       <div className="flex flex-column pt1 pr3">
         <label>Precio</label>
         <label>${}</label>
@@ -156,24 +168,22 @@ const Concepto = ({}) => {
 //secciones
 const Home = props => {
   return (
-    <Gcc>
-      <Fragment>
-        <section className="avenir w-100 pa2 pt5">
-          <SmallBox color="pink">
-            <Alumnos />
-          </SmallBox>
-          <SmallBox color="light-blue">
-            <Reporte />
-          </SmallBox>
-          <SmallBox color="red">
-            <Usuarios />
-          </SmallBox>
-        </section>
-        <BigBox color="gold">
-          <NuevoRecibo />
-        </BigBox>
-      </Fragment>
-    </Gcc>
+    <Fragment>
+      <section className="avenir w-100 pa2 pt5">
+        <SmallBox color="pink">
+          <Alumnos />
+        </SmallBox>
+        <SmallBox color="light-blue">
+          <Reporte />
+        </SmallBox>
+        <SmallBox color="red">
+          <Usuarios />
+        </SmallBox>
+      </section>
+      <BigBox color="gold">
+        <NuevoRecibo />
+      </BigBox>
+    </Fragment>
   );
 };
 const NuevoRecibo = props => {
@@ -182,32 +192,35 @@ const NuevoRecibo = props => {
     datos.meses[now.getMonth()]
   } / ${now.getYear() - 100} `;
   return (
-    <Gc.Consumer>
-      { context => (
-        <Fragment>
-          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-            <div className="ttu f6 fw2">Recibo</div>
-            <div className="ttu f6 fw2">{fecha}</div>
-            <div className="ttu f6 fw2">nro 0000 - 0000</div>
-          </div>
-          <div className="flex flex-column pt3">
-            <Campo color="gold" nombre="Nombre" />
-            {context.state.items.map((c)=><Concepto key={uid()} />)}
-            <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
-              +
-            </button>
-          </div>
-          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-            $ 50
-          </div>
-          <div className="pt2 w-100 inline-flex items-center justify-end">
-            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-              Cobrar
-            </a>
-          </div>
-        </Fragment>
-      )}
-    </Gc.Consumer>
+    <Gcc>
+      <Gc.Consumer>
+        { context => {
+          return (
+          <Fragment>
+            <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+              <div className="ttu f6 fw2">Recibo</div>
+              <div className="ttu f6 fw2">{fecha}</div>
+              <div className="ttu f6 fw2">nro 0000 - 0000</div>
+            </div>
+            <div className="flex flex-column pt3">
+              <Campo color="gold" nombre="Nombre" />
+              {context.state.items.map((c, i)=> <Concepto numero={i} changers={context.changers} key={uid()} />)}
+              <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
+                +
+              </button>
+            </div>
+            <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+              $ 50
+            </div>
+            <div className="pt2 w-100 inline-flex items-center justify-end">
+              <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+                Cobrar
+              </a>
+            </div>
+          </Fragment>
+        )}}
+      </Gc.Consumer>
+    </Gcc>
   );
 };
 const Reportes = props => {
