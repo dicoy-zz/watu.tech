@@ -56,30 +56,23 @@ datos.agregar("conceptos", [
 datos.agregar("tamaños", ["15 x 20", "20 x 30"]);
 
 //contextos
-const gc = React.createContext();
-class gcc extends React.Component {
+const Gc = React.createContext();
+class Gcc extends React.Component {
   state = {
-    homeBoxes: local("homeBoxes"),
-    recibo: {}
+    homeBoxes: datos.homeBoxes,
+    items: [{}]
   };
 
   render() {
-    const { homeBoxes, nombre, items, monto } = this.state;
-
     return (
-      // Create a Provider from the Context, pass in state values
-      <CompanyContext.Provider
+      <Gc.Provider
         value={{
-          companyName,
-          employees,
-          name,
-          teamName,
-          teams,
-          title
+          state: this.state,
+          nuevoItem: () => this.setState({items:this.state.items.concat("")})
         }}
       >
-        <Company />
-      </CompanyContext.Provider>
+        {this.props.children}
+      </Gc.Provider>
     );
   }
 }
@@ -152,6 +145,10 @@ const Concepto = ({}) => {
       <Campo color="gold" nombre="Acto" />
       <Campo color="gold" nombre="Codigo" />
       <DropDown color="gold" nombre="Tamaño" opciones={datos.tamaños} />
+      <div className="flex flex-column pt1 pr3">
+        <label>Precio</label>
+        <label>${}</label>
+      </div>
     </div>
   );
 };
@@ -159,22 +156,24 @@ const Concepto = ({}) => {
 //secciones
 const Home = props => {
   return (
-    <Fragment>
-      <section className="avenir w-100 pa2 pt5">
-        <SmallBox color="pink">
-          <Alumnos />
-        </SmallBox>
-        <SmallBox color="light-blue">
-          <Reporte />
-        </SmallBox>
-        <SmallBox color="red">
-          <Usuarios />
-        </SmallBox>
-      </section>
-      <BigBox color="gold">
-        <NuevoRecibo />
-      </BigBox>
-    </Fragment>
+    <Gcc>
+      <Fragment>
+        <section className="avenir w-100 pa2 pt5">
+          <SmallBox color="pink">
+            <Alumnos />
+          </SmallBox>
+          <SmallBox color="light-blue">
+            <Reporte />
+          </SmallBox>
+          <SmallBox color="red">
+            <Usuarios />
+          </SmallBox>
+        </section>
+        <BigBox color="gold">
+          <NuevoRecibo />
+        </BigBox>
+      </Fragment>
+    </Gcc>
   );
 };
 const NuevoRecibo = props => {
@@ -183,28 +182,32 @@ const NuevoRecibo = props => {
     datos.meses[now.getMonth()]
   } / ${now.getYear() - 100} `;
   return (
-    <Fragment>
-      <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
-        <div className="ttu f6 fw2">Recibo</div>
-        <div className="ttu f6 fw2">{fecha}</div>
-        <div className="ttu f6 fw2">nro 0000 - 0000</div>
-      </div>
-      <div className="flex flex-column pt3">
-        <Campo color="gold" nombre="Nombre" />
-        <Concepto />
-        <button className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
-          +
-        </button>
-      </div>
-      <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-        $ 50
-      </div>
-      <div className="pt2 w-100 inline-flex items-center justify-end">
-        <a className="link dim white ttu f6 fw6" href="#" title="Contact">
-          Cobrar
-        </a>
-      </div>
-    </Fragment>
+    <Gc.Consumer>
+      { context => (
+        <Fragment>
+          <div className="w-100 pb1 bb b--white-50  inline-flex items-center justify-between">
+            <div className="ttu f6 fw2">Recibo</div>
+            <div className="ttu f6 fw2">{fecha}</div>
+            <div className="ttu f6 fw2">nro 0000 - 0000</div>
+          </div>
+          <div className="flex flex-column pt3">
+            <Campo color="gold" nombre="Nombre" />
+            {context.state.items.map((c)=><Concepto key={uid()} />)}
+            <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
+              +
+            </button>
+          </div>
+          <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
+            $ 50
+          </div>
+          <div className="pt2 w-100 inline-flex items-center justify-end">
+            <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+              Cobrar
+            </a>
+          </div>
+        </Fragment>
+      )}
+    </Gc.Consumer>
   );
 };
 const Reportes = props => {
@@ -467,9 +470,11 @@ const Root = () => {
           <Route
             path="/nuevoRecibo"
             component={() => (
-              <BigBox color="gold">
-                <NuevoRecibo />
-              </BigBox>
+              <Gcc>
+                <BigBox color="gold">
+                  <NuevoRecibo />
+                </BigBox>
+              </Gcc>
             )}
           />
           <Route
