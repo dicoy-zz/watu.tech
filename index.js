@@ -45,13 +45,13 @@ datos.agregar("meses", [
   "Dic"
 ]);
 datos.agregar("conceptos", [
-  "Couta Social",
-  "Materiales",
-  "Emergencias",
-  "Fotos",
-  "Rifa",
-  "Extraordinaria",
-  "Donaciones"
+  {nombre:"Cuota Social", precio: 100},
+  {nombre:"Materiales", precio: 600},
+  {nombre:"Emergencias", precio: 200},
+  {nombre:"Fotos", precio: 10},
+  {nombre:"Rifa", precio: 10},
+  {nombre:"Extraordinaria", precio: 100},
+  {nombre:"Donaciones", precio: 100}
 ]);
 datos.agregar("tamaños", ["15 x 20", "20 x 30"]);
 
@@ -60,7 +60,7 @@ const Gc = React.createContext();
 class Gcc extends React.Component {
   state = {
     homeBoxes: datos.homeBoxes,
-    items: [{}]
+    items: [{concepto: "Cuota Social", mes: "Mar", precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio}]
   };
 
   render() {
@@ -68,14 +68,29 @@ class Gcc extends React.Component {
       <Gc.Provider
         value={{
           state: this.state,
-          nuevoItem: () => this.setState({items:this.state.items.concat("")}),
+          nuevoItem: () => this.setState({items:this.state.items.concat({
+            concepto: "Cuota Social", 
+            mes: "Mar", 
+            precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio
+          })}),
           changers: {
-            concepto: (concepto, numero) => this.setState({
-              items:this.state.items.map((item, index) =>
-                numero == index ? {...item, concepto} : item
-              )
-            }),
-            mes: (a,b) => this.setState({items:this.state.items.concat("")})
+            concepto: (numero, concepto) => {
+              this.setState({
+                items:this.state.items.map((item, index) =>
+                  numero == index 
+                    ? {...item, concepto, precio: datos.conceptos.filter(c=>c.nombre==concepto)[0].precio} 
+                    : item
+                )
+              });
+            },
+            mes: (numero, mes) => {
+             
+              this.setState({
+                items:this.state.items.map((item, index) =>
+                  numero == index ? {...item, mes} : item
+                )
+              });
+            },
           }
         }}
       >
@@ -127,21 +142,21 @@ const SmallBox = ({ color, children }) => {
     </article>
   );
 };
-const Campo = ({ color, nombre }) => {
+const Campo = ({ css, nombre }) => {
   return (
     <div className="flex flex-column pt1 pr3">
       <label>{nombre}</label>
-      <input className={`${color} w5 mb3 f6 fw6 bb bw-3 bg`} />
+      <input className={`${css} mb3 f6 fw6 bb bw-3 bg`} />
     </div>
   );
 };
-const DropDown = ({ color, nombre, numero, changer, opciones }) => {
+const DropDown = ({ color, nombre, value, numero, changer, opciones }) => {
   return (
     <Gc.Consumer>
       { context => (
         <div className="flex flex-column pt1 pr3">
           <label>{nombre}</label>
-          <select onChange={e=>changer(numero, e.target.value)} className={`${color} w-100 mb3 f6 fw6 bb`}>
+          <select value={value} onChange={e=>changer(numero, e.target.value)} className={`${color} w-100 mb3 f6 fw6 bb`}>
             {opciones.map(opcion => <option key={uid()}>{opcion}</option>)}
           </select>
         </div>
@@ -149,17 +164,17 @@ const DropDown = ({ color, nombre, numero, changer, opciones }) => {
     </Gc.Consumer>
   );
 };
-const Concepto = ({numero, changers}) => {
+const Concepto = ({numero, changers, item}) => {
   return (
     <div className="flex flex-row pt3">
-      <DropDown color="gold" nombre="Concepto" numero={numero} changer={changers.concepto} opciones={datos.conceptos} />
-      <DropDown color="gold" nombre="Mes" numero={numero} changer={changers.mes} opciones={datos.meses} />
-      <Campo color="gold" nombre="Acto" numero={numero} changer={changers.acto} />
-      <Campo color="gold" nombre="Codigo" numero={numero} changer={changers.codigo} />
-      <DropDown color="gold" nombre="Tamaño" numero={numero} changer={changers.tamaño} opciones={datos.tamaños} />
+      <DropDown color="gold" nombre="Concepto" numero={numero} value={item.concepto.nombre} changer={changers.concepto} opciones={datos.conceptos.map(c=>c.nombre)} />
+      {item.concepto=='Cuota Social'?<DropDown color="gold" nombre="Mes" numero={numero} value={item.mes} changer={changers.mes} opciones={datos.meses} />:''}
+      {item.concepto=='Fotos'?<Campo css="gold w-50" nombre="Acto" numero={numero} changer={changers.acto} />:''}
+      {item.concepto=='Fotos'?<Campo css="gold w-50" nombre="Codigo" numero={numero} changer={changers.codigo} />:''}
+      {item.concepto=='Fotos'?<DropDown color="gold" nombre="Tamaño" numero={numero} changer={changers.tamaño} opciones={datos.tamaños} />:''}
       <div className="flex flex-column pt1 pr3">
         <label>Precio</label>
-        <label>${}</label>
+        <label>${datos.conceptos.filter(c=>c.nombre==item.concepto)[0].precio}</label>
       </div>
     </div>
   );
@@ -204,13 +219,13 @@ const NuevoRecibo = props => {
             </div>
             <div className="flex flex-column pt3">
               <Campo color="gold" nombre="Nombre" />
-              {context.state.items.map((c, i)=> <Concepto numero={i} changers={context.changers} key={uid()} />)}
+              {context.state.items.map((c, i)=> <Concepto item={c} numero={i} changers={context.changers} key={uid()} />)}
               <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
                 +
               </button>
             </div>
             <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-              $ 50
+              $ {50}
             </div>
             <div className="pt2 w-100 inline-flex items-center justify-end">
               <a className="link dim white ttu f6 fw6" href="#" title="Contact">
