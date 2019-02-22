@@ -53,15 +53,21 @@ datos.agregar("conceptos", [
   {nombre:"Extraordinaria", precio: 100},
   {nombre:"Donaciones", precio: 100}
 ]);
-datos.agregar("tamaños", [{medidas:"15 x 20", precio:10}, {medidas:"20 x 30", precio:20}, {medidas:"taza", precio:30}, {sdfmedidas:"llavero", precio:40}]);
+datos.agregar("tamaños", [
+  {medidas:"15 x 20", precio:10}, {medidas:"20 x 30", precio:20}, {medidas:"taza", precio:30}, {sdfmedidas:"llavero", precio:40}
+]);
  
 //contextos
 const Gc = React.createContext();
 class Gcc extends React.Component {
-  state = {
-    homeBoxes: datos.homeBoxes,
-    items: [{concepto: "Cuota Social", mes: "Mar", precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio}]
-  };
+
+  constructor(props) { 
+    super(props);
+    this.state = {
+      homeBoxes: datos.homeBoxes,
+      items: [{concepto: "Cuota Social", mes: "Mar", precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio}]
+    };
+  }
 
   render() {
     return (
@@ -187,9 +193,10 @@ const DropDown = ({ color, nombre, value, numero, changer, opciones }) => {
   );
 };
 const Concepto = ({numero, changers, item, quitarItem}) => {
+  console.log(numero);
   return (
     <div className="flex flex-row pt3">
-      <button onClick={()=>quitarItem(item.numero)} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
+      <button onClick={()=>quitarItem(numero)} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
                 -
               </button>
       <DropDown color="gold" nombre="Concepto" numero={numero} value={item.concepto} changer={changers.concepto} opciones={datos.conceptos.map(c=>c.nombre)} />
