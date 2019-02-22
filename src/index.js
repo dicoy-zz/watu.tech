@@ -53,19 +53,15 @@ datos.agregar("conceptos", [
   {nombre:"Extraordinaria", precio: 100},
   {nombre:"Donaciones", precio: 100}
 ]);
-datos.agregar("tamaños", ["15 x 20", "20 x 30"]);
-
+datos.agregar("tamaños", [{medidas:"15 x 20", precio:10}, {medidas:"20 x 30", precio:20}, {medidas:"taza", precio:30}, {sdfmedidas:"llavero", precio:40}]);
+ 
 //contextos
 const Gc = React.createContext();
 class Gcc extends React.Component {
-
-  constructor(props) { 
-    super(props);
-    this.state = {
-      homeBoxes: datos.homeBoxes,
-      items: [{concepto: "Cuota Social", mes: "Mar", precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio}]
-    };
-  }
+  state = {
+    homeBoxes: datos.homeBoxes,
+    items: [{concepto: "Cuota Social", mes: "Mar", precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio}]
+  };
 
   render() {
     return (
@@ -77,6 +73,14 @@ class Gcc extends React.Component {
             mes: "Mar", 
             precio: datos.conceptos.filter(c=>c.nombre=="Cuota Social")[0].precio
           })}),
+          quitarItem: (numero) => {
+            
+                console.log("lala", numero);
+            this.setState({
+              items:this.state.items.filter((item, index)=>{
+                return index != numero
+            })
+           })},
           changers: {
             concepto: (numero, concepto) => {
               this.setState({
@@ -92,6 +96,20 @@ class Gcc extends React.Component {
               this.setState({
                 items:this.state.items.map((item, index) =>
                   numero == index ? {...item, mes} : item
+                )
+              });
+            },
+            tamaño: (numero, tamaño) => {
+              console.log(this.state.items.map((item, index) =>
+                  numero == index 
+                    ? {...item, tamaño, precio: datos.tamaños.filter(t=>t.medidas==tamaño)[0].precio} 
+                    : item
+                ));
+              this.setState({
+                items:this.state.items.map((item, index) =>
+                  numero == index 
+                    ? {...item, tamaño, precio: datos.tamaños.filter(t=>t.medidas==tamaño)[0].precio} 
+                    : item
                 )
               });
             },
@@ -168,14 +186,17 @@ const DropDown = ({ color, nombre, value, numero, changer, opciones }) => {
     </Gc.Consumer>
   );
 };
-const Concepto = ({numero, changers, item}) => {
+const Concepto = ({numero, changers, item, quitarItem}) => {
   return (
     <div className="flex flex-row pt3">
-      <DropDown color="gold" nombre="Concepto" numero={numero} value={item.concepto.nombre} changer={changers.concepto} opciones={datos.conceptos.map(c=>c.nombre)} />
+      <button onClick={()=>quitarItem(item.numero)} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
+                -
+              </button>
+      <DropDown color="gold" nombre="Concepto" numero={numero} value={item.concepto} changer={changers.concepto} opciones={datos.conceptos.map(c=>c.nombre)} />
       {item.concepto=='Cuota Social'?<DropDown color="gold" nombre="Mes" numero={numero} value={item.mes} changer={changers.mes} opciones={datos.meses} />:''}
       {item.concepto=='Fotos'?<Campo css="gold w-50" nombre="Acto" numero={numero} changer={changers.acto} />:''}
       {item.concepto=='Fotos'?<Campo css="gold w-50" nombre="Codigo" numero={numero} changer={changers.codigo} />:''}
-      {item.concepto=='Fotos'?<DropDown color="gold" nombre="Tamaño" numero={numero} changer={changers.tamaño} opciones={datos.tamaños} />:''}
+      {item.concepto=='Fotos'?<DropDown color="gold" nombre="Tamaño" numero={numero} value={item.tamaño} changer={changers.tamaño} opciones={datos.tamaños.map(t=>t.medidas)} />:''}
       <div className="flex flex-column pt1 pr3">
         <label>Precio</label>
         <label>${datos.conceptos.filter(c=>c.nombre==item.concepto)[0].precio}</label>
@@ -223,18 +244,18 @@ const NuevoRecibo = props => {
             </div>
             <div className="flex flex-column pt3">
               <Campo color="gold" nombre="Nombre" />
-              {context.state.items.map((c, i)=> <Concepto item={c} numero={i} changers={context.changers} key={uid()} />)}
+              {context.state.items.map((c, i)=> <Concepto item={c} numero={i} quitarItem={context.quitarItem} changers={context.changers} key={uid()} />)}
               <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
                 +
               </button>
             </div>
             <div className="pt3 f2 f2-m fw5 w-100 inline-flex items-center justify-end">
-              $ {50}
+              $ {context.state.items.reduce((a, c)=>a+=c.precio,0)}
             </div>
             <div className="pt2 w-100 inline-flex items-center justify-end">
-              <a className="link dim white ttu f6 fw6" href="#" title="Contact">
+              <button className="br-pill b f4 gold w-20 bg-white b--white shadow-3">
                 Cobrar
-              </a>
+              </button>
             </div>
           </Fragment>
         )}}
@@ -540,4 +561,3 @@ const Root = () => {
 };
 
 render(<Root />, document.querySelector("#app"));
-
