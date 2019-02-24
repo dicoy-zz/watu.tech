@@ -1,4 +1,7 @@
 {
-  "name": "lacoop.app",
-  "version": 2
+  "name": "watu.tech",
+  "version": 2,
+    "builds": [
+        { "src": "*.js", "use": "@now/node" }
+    ]
 }
