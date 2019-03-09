@@ -2,6 +2,8 @@
   "name": "watu.tech",
   "version": 2,
     "builds": [
-        { "src": "*.js", "use": "@now/node" }
+        { "src": "*.js", "use": "@now/node" },
+        { "src": "indext.html", "use": "@now/static" },
+        { "src": "favicon.ico", "use": "@now/static" }
     ]
 }

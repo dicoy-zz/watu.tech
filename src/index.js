@@ -54,7 +54,10 @@ datos.agregar("conceptos", [
   {nombre:"Donaciones", precio: 100}
 ]);
 datos.agregar("tamaños", [
-  {medidas:"15 x 20", precio:10}, {medidas:"20 x 30", precio:20}, {medidas:"taza", precio:30}, {sdfmedidas:"llavero", precio:40}
+  {medidas:"15 x 20", precio:10}, 
+  {medidas:"20 x 30", precio:20}, 
+  {medidas:"taza", precio:30}, 
+  {medidas:"llavero", precio:40}
 ]);
  
 //contextos
@@ -250,7 +253,7 @@ const NuevoRecibo = props => {
               <div className="ttu f6 fw2">nro 0000 - 0000</div>
             </div>
             <div className="flex flex-column pt3">
-              <Campo color="gold" nombre="Nombre" />
+              <Campo css="w-40" nombre="Nombre" />
               {context.state.items.map((c, i)=> <Concepto item={c} numero={i} quitarItem={context.quitarItem} changers={context.changers} key={uid()} />)}
               <button onClick={context.nuevoItem} className="br-pill b f4 gold w-10 bg-white b--white shadow-3">
                 +
